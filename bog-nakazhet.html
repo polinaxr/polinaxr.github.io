@@ -23,6 +23,13 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=Onest:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="site.css">
 <script>(function(){var t;try{t=localStorage.getItem("pv-theme")}catch(e){}if(!t)try{t=sessionStorage.getItem("pv-theme")}catch(e){}if(!t){var m=/^pv-theme=(light|dark)$/.exec(window.name||"");t=m&&m[1]}document.documentElement.setAttribute("data-theme",t==="light"?"light":"dark")})()</script>
+<style>
+/* кнопка «Смотреть в формате сторис» на странице */
+.stories-btn{justify-self:start;display:inline-flex;align-items:center;gap:12px;padding:6px 18px 6px 6px;border-radius:999px;background:var(--solid);color:var(--on-solid);text-decoration:none;font-weight:600;font-size:15px;box-shadow:var(--shadow);transition:transform .2s ease}
+.stories-btn:hover{transform:translateY(-1px)}
+.stories-btn .ring{flex:none;width:38px;height:38px;border-radius:50%;padding:2.5px;background:conic-gradient(from 210deg,#E0A33A,#C58A2E,#7A5A3A,#3B4A7A,#E0A33A)}
+.stories-btn .ring span{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:var(--solid);color:#F0B54A}
+</style>
 </head>
 <body>
 <div class="site">
@@ -36,19 +43,24 @@
   <nav class="crumbs" aria-label="Вы здесь"><a href="questions.html">Вопросы</a><span aria-hidden="true">›</span><a href="topic-god.html">Бог</a></nav>
   <h1>Бог меня накажет?</h1>
   <div class="meta"><span>Вопрос</span><span>2 мин чтения</span></div>
+  <a class="stories-btn" href="stories.html#bog-nakazhet"><span class="ring" aria-hidden="true"><span><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10.5-6.5a1 1 0 0 0 0-1.8L9.5 4.6A1 1 0 0 0 8 5.5z"/></svg></span></span>Смотреть в формате сторис</a>
 </div></div>
-<div class="in narrow"><article class="prose"><div class="box box-short"><b class="box-t">Коротко</b><p>Бог справедлив и не закрывает глаза на зло. Но Он не ищет, за что наказать. Наказание за наши грехи Иисус принял на Себя. Тому, кто доверился Иисусу, не нужно бояться Божьего наказания.</p></div>
-<h2>Бог не закрывает глаза на зло</h2>
+<div class="in narrow"><article class="prose"><div class="box box-short"><b class="box-t">Коротко</b><p>Бог справедлив и не закрывает глаза на зло. Но Он не ищет, за что наказать. Он любит человека и хочет его простить. Наказание за наши грехи Иисус принял на Себя. Тому, кто доверился Иисусу, не нужно бояться Божьего наказания.</p></div>
+<h2>Бог против зла, потому что любит</h2>
 <p>Зло ранит людей, и Богу это не всё равно. Поэтому Он не делает вид, что зла нет. Библия честно говорит, что Бог будет судить.</p>
+<p>Но Божий гнев не похож на наш. Мы злимся, когда нас задели или когда мы устали. Божий гнев — это твёрдое «нет» злу, которое губит людей. Бог против зла, потому что любит нас.</p>
+<h2>Бог ищет, а не ловит</h2>
+<div class="ex ex-story"><b class="ex-t">Притча</b><p>Иисус рассказал о пастухе, у которого из ста овец потерялась одна. Пастух оставил остальных и искал, пока не нашёл. А потом нёс её домой на плечах и радовался.</p></div>
+<p>Так Иисус объяснил, как Бог относится к человеку, который от Него ушёл.</p>
 <h2>Наказание уже понёс Иисус</h2>
-<p>Бог не хочет наказывать. Он хочет, чтобы люди вернулись к Нему. Поэтому Иисус умер на кресте и принял на Себя наказание за наши грехи.</p>
+<p>Бог не хочет наказывать. Он хочет, чтобы люди вернулись к Нему. Поэтому Иисус умер на <button type="button" class="term" data-term="krest" aria-expanded="false">кресте</button> и принял на Себя наказание за наши грехи.</p>
 <blockquote><p>Нет теперь никакого осуждения тем, кто во Христе Иисусе.</p><cite>Римлянам 8:1</cite></blockquote>
 <p>Кто доверился Иисусу, тот больше не стоит перед Богом как обвиняемый.</p>
 <h2>Беда — не всегда наказание</h2>
 <p>Когда случается что-то плохое, легко подумать: это Бог меня наказывает. Иисус учил иначе.</p>
 <div class="ex ex-story"><b class="ex-t">Как это было</b><p>Ученики увидели человека, слепого от рождения, и спросили Иисуса: кто согрешил, он или его родители? Иисус ответил: ни он, ни родители. А потом исцелил его.</p></div>
 <p>Подробнее: <a href="stradaniya.html">«Почему Бог допускает страдания?»</a></p></article>
-<section class="next-steps"><h2>Читать дальше</h2><div class="list"><a class="list-item" href="bog-zlitsya.html" data-filter-item><span><b>Бог злится на меня?</b><p>Если я сделал много плохого, ждёт ли меня Божий гнев.</p></span><small>Вопрос · 2 мин</small></a><a class="list-item" href="kakoy-bog.html" data-filter-item><span><b>Какой Бог?</b><p>Творец, святой, справедливый и любящий.</p></span><small>2 мин</small></a><a class="list-item" href="krest.html" data-filter-item><span><b>Почему Иисус умер на кресте?</b><p>Зачем умер Иисус и что это меняет для нас.</p></span><small>2 мин</small></a></div></section>
+<section class="next-steps"><h2>Читать дальше</h2><div class="list"><a class="list-item" href="kakoy-bog.html" data-filter-item><span><b>Какой Бог?</b><p>Творец, святой, справедливый и любящий.</p></span><small>2 мин</small></a><a class="list-item" href="krest.html" data-filter-item><span><b>Почему Иисус умер на кресте?</b><p>Зачем умер Иисус и что это меняет для нас.</p></span><small>2 мин</small></a></div></section>
 </div>
 </main>
 <footer class="ftr">
