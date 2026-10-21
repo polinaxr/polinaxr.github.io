@@ -364,10 +364,12 @@
   })();
 
   /* жест «назад»: смахнуть вправо двумя пальцами на тачпаде (как на Маке) или пальцем по экрану телефона.
-     Тачпад — только когда сайт открыт внутри другой страницы (превью): на отдельном сайте это умеет сам браузер.
+     Тачпад — только когда сайт открыт внутри другой страницы или во встроенном браузере приложения: обычный браузер это умеет сам.
      Палец на телефоне — всегда: на iPhone смахивание «назад» работает не везде (например, с иконки на экране «Домой»). */
   (function(){
     var framed;try{framed=window.self!==window.top}catch(_){framed=true}
+    /* встроенный браузер приложения (например, превью в Claude) сам по свайпу назад не ходит — делаем это мы */
+    if(/\b(Claude|Electron)\//.test(navigator.userAgent))framed=true;
     var phone=('ontouchstart' in window)||(window.matchMedia&&matchMedia('(pointer:coarse)').matches);
     if(!framed&&!phone)return;
     if(framed)root.style.overscrollBehaviorX='none';
