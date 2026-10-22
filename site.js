@@ -174,23 +174,37 @@
 
   /* поиск по сайту: служебные слова («что», «как», «ли»…) не учитываем, слова сравниваем по основе */
   function norm(s){return (s||'').toLowerCase().replace(/ё/g,'е')}
-  var STOP={'а':1,'и':1,'в':1,'во':1,'на':1,'не':1,'ли':1,'же':1,'бы':1,'то':1,'по':1,'за':1,'из':1,'от':1,'до':1,'о':1,'об':1,'у':1,'к':1,'с':1,'со':1,'для':1,'что':1,'чем':1,'как':1,'так':1,'это':1,'этот':1,'эта':1,'эти':1,'ну':1,'да':1,'нет':1,'или':1,'но':1,'если':1,'почему':1,'зачем':1,'когда':1,'где':1,'кто':1,'какой':1,'какая':1,'какое':1,'какие':1,'такой':1,'такая':1,'такое':1,'есть':1,'был':1,'была':1,'было':1,'были':1,'быть':1,'можно':1,'нужно':1,'надо':1,'правда':1,'вообще':1,'мне':1,'меня':1,'мой':1,'моя':1,'я':1,'ты':1,'вы':1,'мы':1,'он':1,'она':1,'они':1,'его':1,'ее':1,'их':1,'там':1,'тут':1,'все':1,'всё':1,'весь':1,'очень':1,'самом':1,'деле':1,'ведь':1,'разве':1,'неужели':1,'просто':1,'тогда':1,'сейчас':1};
+  var STOP={'а':1,'и':1,'в':1,'во':1,'на':1,'не':1,'ли':1,'же':1,'бы':1,'то':1,'по':1,'за':1,'из':1,'от':1,'до':1,'о':1,'об':1,'у':1,'к':1,'с':1,'со':1,'для':1,'что':1,'чем':1,'как':1,'так':1,'это':1,'этот':1,'эта':1,'эти':1,'ну':1,'да':1,'нет':1,'или':1,'но':1,'если':1,'почему':1,'зачем':1,'когда':1,'где':1,'кто':1,'какой':1,'какая':1,'какое':1,'какие':1,'такой':1,'такая':1,'такое':1,'есть':1,'был':1,'была':1,'было':1,'были':1,'быть':1,'можно':1,'нужно':1,'надо':1,'правда':1,'вообще':1,'мне':1,'меня':1,'мой':1,'моя':1,'я':1,'ты':1,'вы':1,'мы':1,'он':1,'она':1,'они':1,'его':1,'ее':1,'их':1,'там':1,'тут':1,'все':1,'всё':1,'весь':1,'очень':1,'самом':1,'деле':1,'ведь':1,'разве':1,'неужели':1,'просто':1,'тогда':1,'сейчас':1,'может':1,'могу':1,'могут':1,'мои':1,'моих':1,'мою':1,'мое':1,'свой':1,'свою':1,'свои':1,'своих':1,'этого':1,'этом':1,'этой':1,'значит':1,'означает':1,'чего':1,'тот':1,'того':1,'нам':1,'нас':1,'вам':1,'вас':1,'тебя':1,'тебе':1,'себя':1,'себе':1,'уже':1,'еще':1,'бывает':1,'бывают':1,'чтобы':1,'чтоб':1,'будет':1,'будут':1,'буду':1,'вдруг':1};
   /* грубая основа слова: отрезаем окончание, чтобы «Бога», «Богу» и «Бог» находили друг друга */
   function stem(w){var b=w.replace(/(ами|ями|ого|его|ому|ему|ыми|ими|ах|ях|ов|ев|ей|ой|ий|ый|ая|яя|ое|ее|ые|ие|ам|ям|ом|ем|ую|юю|ют|ут|ет|ит|ть|ся|сь|[аеиоуыэюяйь])$/,'');return b.length>=3?b:w}
   function words(s){return ' '+norm(s).replace(/[^a-zа-я0-9]+/g,' ')}
-  function terms(q){return norm(q).replace(/[^a-zа-я0-9]+/g,' ').trim().split(' ').filter(function(w){return w.length>1&&!STOP[w]}).map(stem)}
+  /* у длинного слова сравниваем начало без двух последних букв: «выглядит» найдёт «выглядел», «христианином» — «христиане» */
+  function terms(q){return norm(q).replace(/[^a-zа-я0-9]+/g,' ').trim().split(' ').filter(function(w){return w.length>1&&!STOP[w]}).map(function(w){w=stem(w);return w.length>=7?w.slice(0,Math.max(5,w.length-2)):w})}
+  /* редкое слово важнее частого: «динозавры» говорит о вопросе больше, чем «Библия» */
+  var DF={};
+  function prep(it){if(!it._w){it._w=[words(it.title),words(it.keys||''),words(it.text||'')];it._t=terms(it.title)}}
+  function weight(w){
+    if(DF[w]==null){var n=0;D.search.forEach(function(it){prep(it);if(it._w[0].indexOf(w)>-1||it._w[1].indexOf(w)>-1)n++});DF[w]=n}
+    /* слова, которого нет нигде, скорее всего случайное: средний вес, чтобы оно не перевешивало */
+    return DF[w]?1+Math.log((D.search.length+1)/(DF[w]+1))/2:2;
+  }
   function findItems(q){
     var ws=terms(q),nq=norm(q).replace(/[^a-zа-я0-9]+/g,' ').trim();
     if(!ws.length)return {items:[],good:false};
+    var wt=ws.map(function(w){return weight(' '+w)}),all=wt.reduce(function(a,b){return a+b},0);
     var res=D.search.map(function(it){
-      if(!it._w)it._w=[words(it.title),words(it.keys||''),words(it.text||'')];
-      var tl=it._w[0],ks=it._w[1],hay=it._w[2],s=0,hit=0;
+      prep(it);
+      var tl=it._w[0],ks=it._w[1],hay=it._w[2],s=0,hit=0,inTitle=0;
       /* слово ищем с начала слова: «ад» не должен находиться внутри «страдания» */
-      ws.forEach(function(w){w=' '+w;if(tl.indexOf(w)>-1){s+=3;hit++}else if(ks.indexOf(w)>-1){s+=2;hit++}else if(hay.indexOf(w)>-1){s+=.6;hit+=.5}});
+      ws.forEach(function(w,i){w=' '+w;var k=wt[i];if(tl.indexOf(w)>-1){s+=3*k;hit+=k;inTitle++}else if(ks.indexOf(w)>-1){s+=2*k;hit+=k}else if(hay.indexOf(w)>-1){s+=.6*k;hit+=.5*k}});
       if(nq.length>3&&tl.indexOf(' '+nq)>-1)s+=10;
+      /* при равенстве выше тот, чей заголовок почти целиком совпал с вопросом */
+      if(it._t.length)s+=Math.min(1,inTitle/it._t.length);
       if(it.kind==='Вопрос')s+=.3;
-      return {it:it,s:s,c:hit/ws.length};
-    }).filter(function(x){return x.s>.5}).sort(function(a,b){return b.s-a.s});
+      /* выше тот, у кого совпало больше слов вопроса, а не одно частое слово */
+      var c=hit/all;
+      return {it:it,s:s*(.4+c),c:c};
+    }).filter(function(x){return x.s>.3}).sort(function(a,b){return b.s-a.s});
     /* «хорошо нашлось», если у лучшего результата совпала хотя бы половина значимых слов в заголовке или ключевых словах */
     var best=res[0],good=!!best&&(best.c>=.6||ws.length===1&&best.c>=.5);
     /* если ответ нашёлся, слабые совпадения не показываем, чтобы не мешали */
@@ -301,15 +315,24 @@
     var empty=document.createElement('div');empty.className='no-answer filter-empty';empty.hidden=true;filter.insertAdjacentElement('afterend',empty);
     var isQ=/questions/.test(location.pathname)||!!document.querySelector('a[href="questions.html"][aria-current="page"]');
     filter.addEventListener('input',function(){
-      var ws=terms(filter.value),shown=0;
+      var ws=terms(filter.value),shown=0,r=null,found={};
+      /* на странице вопросов ищем так же, как в общем поиске: по связкам и другими словами */
+      if(isQ&&ws.length){r=findItems(filter.value);if(r.good)r.items.forEach(function(it){found[it.url]=1})}
       document.querySelectorAll('[data-filter-item]').forEach(function(el){
-        var it=byUrl[el.getAttribute('href')],hay=words(el.textContent+' '+(it?(it.keys||'')+' '+(it.short||''):''));
-        var ok=!ws.length||ws.every(function(w){return hay.indexOf(' '+w)>-1});
+        var ok;
+        if(r)ok=!!found[el.getAttribute('href')];
+        else{var it=byUrl[el.getAttribute('href')],hay=words(el.textContent+' '+(it?(it.keys||'')+' '+(it.short||''):''));ok=!ws.length||ws.every(function(w){return hay.indexOf(' '+w)>-1})}
         el.hidden=!ok;if(ok)shown++;
       });
       document.querySelectorAll('[data-filter-group]').forEach(function(g){g.hidden=!g.querySelector('[data-filter-item]:not([hidden])')});
+      /* ответ нашёлся, но не в списке вопросов (например, в уроке) — показываем ссылку на него */
+      var elsewhere=r&&r.good&&!shown?r.items.slice(0,3):[];
       empty.hidden=!!shown;
-      if(!shown)empty.innerHTML=isQ?'<b>Отдельного ответа на этот вопрос у нас пока нет.</b><span>Мы постепенно добавляем новые вопросы. Попробуйте спросить другими словами или сотрите текст, чтобы увидеть все вопросы.</span><span>Или задайте его лично: <a href="https://t.me/Polinwqk" target="_blank" rel="noopener">напишите мне в Telegram</a>.</span>':'<b>Ничего не нашлось.</b><span>Попробуйте другие слова.</span>';
+      if(elsewhere.length){
+        empty.innerHTML='<b>Ответ на этот вопрос есть здесь:</b>';
+        elsewhere.forEach(function(it){var s=document.createElement('span'),a=document.createElement('a');a.href=it.url;a.textContent=it.title;s.appendChild(a);empty.appendChild(s)});
+      }
+      else if(!shown)empty.innerHTML=isQ?'<b>Отдельного ответа на этот вопрос у нас пока нет.</b><span>Мы постепенно добавляем новые вопросы. Попробуйте спросить другими словами или сотрите текст, чтобы увидеть все вопросы.</span><span>Или задайте его лично: <a href="https://t.me/Polinwqk" target="_blank" rel="noopener">напишите мне в Telegram</a>.</span>':'<b>Ничего не нашлось.</b><span>Попробуйте другие слова.</span>';
     });
   }
   /* «Назад»: сначала — туда, откуда человек пришёл на самом деле, иначе — в раздел из «хлебных крошек» */
