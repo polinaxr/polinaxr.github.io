@@ -97,17 +97,19 @@
   document.querySelectorAll('[data-lesson]').forEach(function(li){if(done[li.getAttribute('data-lesson')])li.classList.add('done')});
   var doneCount=D.lessons.filter(function(l){return done[l.slug]}).length;
   document.querySelectorAll('[data-progress-text]').forEach(function(el){el.textContent=doneCount?('Пройдено уроков: '+doneCount+' из '+D.lessons.length):''});
-  var cont=document.getElementById('continue');
-  if(cont&&D.lessons.length){
-    var last=store('pv-last'),next=null;
-    if(last||doneCount){
-      var li=-1;D.lessons.forEach(function(l,i){if(l.slug===last)li=i});
-      if(li>-1&&!done[last])next=D.lessons[li];
-      else{
-        for(var i=li+1;i<D.lessons.length;i++){if(!done[D.lessons[i].slug]){next=D.lessons[i];break}}
-        if(!next)for(var j=0;j<D.lessons.length;j++){if(!done[D.lessons[j].slug]){next=D.lessons[j];break}}
-      }
+  var cont=document.getElementById('continue'),routeBtn=document.querySelector('[data-route-start]');
+  var last=store('pv-last'),next=null;
+  if(D.lessons.length&&(last||doneCount)){
+    var li=-1;D.lessons.forEach(function(l,i){if(l.slug===last)li=i});
+    if(li>-1&&!done[last])next=D.lessons[li];
+    else{
+      for(var i=li+1;i<D.lessons.length;i++){if(!done[D.lessons[i].slug]){next=D.lessons[i];break}}
+      if(!next)for(var j=0;j<D.lessons.length;j++){if(!done[D.lessons[j].slug]){next=D.lessons[j];break}}
     }
+  }
+  /* маршрут: если уже что-то читали, кнопка ведёт к следующему уроку */
+  if(routeBtn&&next){routeBtn.href=next.slug+'.html';routeBtn.textContent='Продолжить'}
+  if(cont){
     if(next){
       cont.href=next.slug+'.html';
       cont.querySelector('small').textContent='Урок '+next.n+' из '+D.lessons.length;
