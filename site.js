@@ -200,6 +200,8 @@
       /* слово ищем с начала слова: «ад» не должен находиться внутри «страдания» */
       ws.forEach(function(w,i){w=' '+w;var k=wt[i];if(tl.indexOf(w)>-1){s+=3*k;hit+=k;inTitle++}else if(ks.indexOf(w)>-1){s+=2*k;hit+=k}else if(hay.indexOf(w)>-1){s+=.6*k;hit+=.5*k}});
       if(nq.length>3&&tl.indexOf(' '+nq)>-1)s+=10;
+      /* вопрос из нескольких слов целиком совпал с готовой фразой в ключах: «не могу себя простить» */
+      else if(nq.indexOf(' ')>-1&&(ks+' ').indexOf(' '+nq+' ')>-1)s+=6;
       /* при равенстве выше тот, чей заголовок почти целиком совпал с вопросом */
       if(it._t.length)s+=Math.min(1,inTitle/it._t.length);
       if(it.kind==='Вопрос')s+=.3;
