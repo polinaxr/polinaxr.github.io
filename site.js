@@ -192,7 +192,20 @@
   }
   function findItems(q){
     var ws=terms(q),nq=norm(q).replace(/[^a-zа-я0-9]+/g,' ').trim();
-    if(!ws.length)return {items:[],good:false};
+    if(!ws.length){
+      /* все слова служебные («нужно ли», «что такое», «можно ли х»): ищем эту фразу в заголовках, начало заголовка — выше */
+      if(nq.length<2)return {items:[],good:false};
+      var ph=' '+nq,found;
+      for(;;){
+        var first=[],rest=[];
+        D.search.forEach(function(it){var i=(' '+norm(it.title).replace(/[^a-zа-я0-9]+/g,' ').trim()).indexOf(ph);if(i===0)first.push(it);else if(i>0)rest.push(it)});
+        found=first.concat(rest);
+        /* недописанное последнее слово ничего не дало — ищем без него: «нужно ли и» → «нужно ли» */
+        if(found.length||ph.lastIndexOf(' ')<1)break;
+        ph=ph.slice(0,ph.lastIndexOf(' '));
+      }
+      return {items:found,good:found.length>0};
+    }
     var wt=ws.map(function(w){return weight(' '+w)}),all=wt.reduce(function(a,b){return a+b},0);
     var res=D.search.map(function(it){
       prep(it);
@@ -237,8 +250,9 @@
     function render(q){
       q=norm(q).trim();var items,r=null;
       sList.innerHTML='';
-      if(!q||!terms(q).length){sLabel.textContent='С чего можно начать';items=D.search.filter(function(it){return it.pin})}
-      else{r=findItems(q);items=r.items;sLabel.textContent=r.good?'Результаты':''}
+      if(q)r=findItems(q);
+      if(!q||!terms(q).length&&!r.items.length){r=null;sLabel.textContent='С чего можно начать';items=D.search.filter(function(it){return it.pin})}
+      else{items=r.items;sLabel.textContent=r.good?'Результаты':''}
       if(r&&!r.good){
         var li=document.createElement('li');li.className='no-answer';noAnswer(li,q);sList.appendChild(li);
         if(!items.length){sLabel.hidden=true;return}
@@ -271,7 +285,7 @@
         var q=qi.value.trim();if(!q){hideSug();return}
         var r=findItems(q),items=r.items,head='';
         sug.innerHTML='';
-        if(!terms(q).length||q.length<3&&!items.length){items=D.search.filter(function(it){return it.pin});head='С чего можно начать'}
+        if(!terms(q).length&&!items.length||q.length<3&&!items.length){items=D.search.filter(function(it){return it.pin});head='С чего можно начать'}
         else if(!r.good){
           /* ждём, пока человек допишет слово, и только потом говорим, что ответа нет */
           var e=document.createElement('li');e.className='no-answer';noAnswer(e,q);sug.appendChild(e);
@@ -322,6 +336,8 @@
       var ws=terms(filter.value),shown=0,r=null,found={};
       /* на странице вопросов ищем так же, как в общем поиске: по связкам и другими словами */
       if(isQ&&ws.length){r=findItems(filter.value);if(r.good)r.items.forEach(function(it){found[it.url]=1})}
+      /* только служебные слова («нужно ли»): оставляем вопросы, в заголовке которых есть эта фраза */
+      else if(!ws.length&&filter.value.trim()){var p=findItems(filter.value);if(p.items.length){r=p;p.items.forEach(function(it){found[it.url]=1})}}
       document.querySelectorAll('[data-filter-item]').forEach(function(el){
         var ok;
         if(r)ok=!!found[el.getAttribute('href')];
