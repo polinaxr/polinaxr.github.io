@@ -357,6 +357,11 @@ a.door:hover{transform:translateY(-2px)}
 :root[data-theme="light"]{--solid:var(--surface-2);--on-solid:var(--fg);--shadow:0 0 0 1px var(--line)}
 :root[data-theme="light"] .door{background:color-mix(in srgb,var(--surface) 55%,var(--bg))}
 :root[data-theme="light"] .t{background:color-mix(in srgb,var(--surface) 35%,var(--bg))}
+/* кнопка «Смотреть в формате сторис» — общая для всех страниц (раньше жила только во встроенных стилях, и у новых страниц её не было) */
+.stories-btn{justify-self:start;display:inline-flex;align-items:center;gap:12px;padding:6px 18px 6px 6px;border-radius:999px;background:var(--solid);color:var(--on-solid);text-decoration:none;font-weight:600;font-size:15px;box-shadow:var(--shadow);transition:transform .2s ease}
+.stories-btn:hover{transform:translateY(-1px)}
+.stories-btn .ring{flex:none;width:38px;height:38px;border-radius:50%;padding:2.5px;background:conic-gradient(from 210deg,#E0A33A,#C58A2E,#7A5A3A,#3B4A7A,#E0A33A)}
+.stories-btn .ring span{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:var(--solid);color:#F0B54A}
 :root[data-theme="light"] .stories-btn{box-shadow:0 0 0 1px var(--line)}
 :root[data-theme="light"] .stories-btn .ring{background:conic-gradient(from 210deg,#F6D48C,#E0A33A,#F3C26A,#E8B25A,#F6D48C)}
 :root[data-theme="light"] .stories-btn .ring span{color:var(--sun)}
@@ -421,3 +426,13 @@ body::before{
 .prose blockquote p{font-style:italic}
 .prose .ex{background:var(--surface);border-radius:16px;padding:16px 20px}
 
+
+/* «Поделиться» в конце ответа: тихая рамка, кнопка того же вида, что остальные */
+.share{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 16px;margin-top:12px;padding:14px 14px 14px 20px;border:1px solid var(--line);border-radius:18px}
+.share p{font-size:16.5px;line-height:1.45;color:var(--muted)}
+.share-btn{padding:11px 20px;font-size:15.5px}
+.share-btn svg{color:var(--sun);flex:none}
+.share-menu{position:absolute;z-index:40;min-width:220px;display:grid;padding:6px;background:var(--bg);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.share-menu a,.share-menu button{display:block;width:100%;padding:11px 14px;border:0;border-radius:10px;background:none;text-align:left;text-decoration:none;font-size:15.5px;font-weight:500;cursor:pointer}
+.share-menu a:hover,.share-menu button:hover{background:var(--surface)}
+@media (max-width:480px){.share{padding:16px}.share-btn{width:100%;justify-content:center}}

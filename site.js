@@ -174,6 +174,54 @@
     if(pop&&!e.target.closest('.pop'))closePop();
   });
 
+  /* «Поделиться» в конце каждого ответа, урока и статьи. На телефоне открываем системное меню (Telegram, WhatsApp…),
+     на компьютере и там, где его нет, — своё маленькое меню. Ссылка всегда основная, без .html и без localhost. */
+  var art=document.querySelector('article.prose');
+  if(art){
+    var h1=document.querySelector('.page-head h1');
+    var sTitle=h1?h1.textContent.trim():document.title;
+    var canon=document.querySelector('link[rel="canonical"]');
+    var sUrl=canon?canon.href:location.href;
+    var share=document.createElement('div');share.className='share';
+    share.innerHTML='<p>Знаете, кому это может помочь?</p><button type="button" class="btn share-btn" aria-haspopup="true" aria-expanded="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M7.5 7.5L12 3l4.5 4.5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Поделиться</button>';
+    art.appendChild(share);
+    var sBtn=share.querySelector('button'),menu=null;
+    function closeMenu(){if(menu){menu.remove();menu=null;sBtn.setAttribute('aria-expanded','false')}}
+    function copyLink(done){
+      function old(){var t=document.createElement('textarea');t.value=sUrl;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();try{document.execCommand('copy')}catch(_){}t.remove();done()}
+      if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(sUrl).then(done,old);else old();
+    }
+    function openMenu(){
+      var u=encodeURIComponent(sUrl),t=encodeURIComponent(sTitle);
+      menu=document.createElement('div');menu.className='share-menu';menu.setAttribute('role','menu');
+      menu.innerHTML='<a role="menuitem" target="_blank" rel="noopener" href="https://t.me/share/url?url='+u+'&text='+t+'">Telegram</a>'
+        +'<a role="menuitem" target="_blank" rel="noopener" href="https://wa.me/?text='+t+'%20'+u+'">WhatsApp</a>'
+        +'<a role="menuitem" target="_blank" rel="noopener" href="https://vk.com/share.php?url='+u+'&title='+t+'">ВКонтакте</a>'
+        +'<button type="button" role="menuitem">Скопировать ссылку</button>';
+      document.body.appendChild(menu);
+      var r=sBtn.getBoundingClientRect(),w=menu.offsetWidth;
+      var left=Math.min(Math.max(12,r.right+window.scrollX-w),window.scrollX+document.documentElement.clientWidth-w-12);
+      menu.style.left=left+'px';menu.style.top=(r.bottom+window.scrollY+8)+'px';
+      sBtn.setAttribute('aria-expanded','true');
+      menu.addEventListener('click',function(e){
+        var b=e.target.closest('button');
+        if(!b){closeMenu();return}
+        copyLink(function(){b.textContent='Ссылка скопирована ✓';setTimeout(closeMenu,1200)});
+      });
+    }
+    sBtn.addEventListener('click',function(e){
+      e.stopPropagation();
+      if(menu){closeMenu();return}
+      if(navigator.share&&window.matchMedia('(pointer:coarse)').matches){
+        navigator.share({title:sTitle,text:sTitle,url:sUrl}).catch(function(){});
+        return;
+      }
+      openMenu();
+    });
+    document.addEventListener('click',function(e){if(menu&&!e.target.closest('.share-menu'))closeMenu()});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape')closeMenu()});
+  }
+
   /* поиск по сайту: служебные слова («что», «как», «ли»…) не учитываем, слова сравниваем по основе */
   function norm(s){return (s||'').toLowerCase().replace(/ё/g,'е')}
   var STOP={'а':1,'и':1,'в':1,'во':1,'на':1,'не':1,'ли':1,'же':1,'бы':1,'то':1,'по':1,'за':1,'из':1,'от':1,'до':1,'о':1,'об':1,'у':1,'к':1,'с':1,'со':1,'для':1,'что':1,'чем':1,'как':1,'так':1,'это':1,'этот':1,'эта':1,'эти':1,'ну':1,'да':1,'нет':1,'или':1,'но':1,'если':1,'почему':1,'зачем':1,'когда':1,'где':1,'кто':1,'какой':1,'какая':1,'какое':1,'какие':1,'такой':1,'такая':1,'такое':1,'есть':1,'был':1,'была':1,'было':1,'были':1,'быть':1,'можно':1,'нужно':1,'надо':1,'правда':1,'вообще':1,'мне':1,'меня':1,'мой':1,'моя':1,'я':1,'ты':1,'вы':1,'мы':1,'он':1,'она':1,'они':1,'его':1,'ее':1,'их':1,'там':1,'тут':1,'все':1,'всё':1,'весь':1,'очень':1,'самом':1,'деле':1,'ведь':1,'разве':1,'неужели':1,'просто':1,'тогда':1,'сейчас':1,'может':1,'могу':1,'могут':1,'мои':1,'моих':1,'мою':1,'мое':1,'свой':1,'свою':1,'свои':1,'своих':1,'этого':1,'этом':1,'этой':1,'значит':1,'означает':1,'чего':1,'тот':1,'того':1,'нам':1,'нас':1,'вам':1,'вас':1,'тебя':1,'тебе':1,'себя':1,'себе':1,'уже':1,'еще':1,'бывает':1,'бывают':1,'чтобы':1,'чтоб':1,'будет':1,'будут':1,'буду':1,'вдруг':1};
