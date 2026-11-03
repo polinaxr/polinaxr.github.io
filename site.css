@@ -362,6 +362,8 @@ a.door:hover{transform:translateY(-2px)}
 .stories-btn:hover{transform:translateY(-1px)}
 .stories-btn .ring{flex:none;width:38px;height:38px;border-radius:50%;padding:2.5px;background:conic-gradient(from 210deg,#E0A33A,#C58A2E,#7A5A3A,#3B4A7A,#E0A33A)}
 .stories-btn .ring span{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:var(--solid);color:#F0B54A}
+/* на главной кнопка стоит в общем столбце: по центру на компьютере, слева на телефоне */
+.hero .stories-btn{justify-self:auto}
 :root[data-theme="light"] .stories-btn{box-shadow:0 0 0 1px var(--line)}
 :root[data-theme="light"] .stories-btn .ring{background:conic-gradient(from 210deg,#F6D48C,#E0A33A,#F3C26A,#E8B25A,#F6D48C)}
 :root[data-theme="light"] .stories-btn .ring span{color:var(--sun)}
