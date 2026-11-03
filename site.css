@@ -286,7 +286,7 @@ a.door:hover{transform:translateY(-2px)}
 
 /* tab bar */
 .tabbar{display:none;position:sticky;bottom:0;z-index:20;justify-content:space-around;padding:8px 6px calc(10px + env(safe-area-inset-bottom,0px));background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
-.tabbar a,.tabbar button{display:grid;justify-items:center;gap:3px;font-size:11px;color:var(--muted);text-decoration:none;border:0;background:none;padding:4px 10px;cursor:pointer}
+.tabbar a,.tabbar button{display:grid;justify-items:center;gap:3px;font-size:11px;color:var(--muted);text-decoration:none;border:0;background:none;padding:4px 6px;cursor:pointer}
 .tabbar [aria-current="page"]{color:var(--fg)}
 .tabbar [aria-current="page"] svg{color:var(--sun)}
 
