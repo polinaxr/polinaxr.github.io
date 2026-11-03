@@ -436,3 +436,7 @@ body::before{
 .share-menu a,.share-menu button{display:block;width:100%;padding:11px 14px;border:0;border-radius:10px;background:none;text-align:left;text-decoration:none;font-size:15.5px;font-weight:500;cursor:pointer}
 .share-menu a:hover,.share-menu button:hover{background:var(--surface)}
 @media (max-width:480px){.share{padding:16px}.share-btn{width:100%;justify-content:center}}
+
+/* страница 404: две кнопки под текстом */
+.nf-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.nf-actions .btn svg{color:var(--sun);flex:none}
