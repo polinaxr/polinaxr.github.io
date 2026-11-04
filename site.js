@@ -2,6 +2,8 @@
 (function(){
   var D=window.SITE_DATA||{search:[],glossary:{},lessons:[]};
   var root=document.documentElement;
+  /* человек уже сам листает страницу: позже (событие load) её не дёргаем */
+  var touched=false;['wheel','touchstart','keydown','mousedown'].forEach(function(t){window.addEventListener(t,function(){touched=true},{passive:true,capture:true})});
   function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(_){return null}}
 
   /* тема */
@@ -65,7 +67,7 @@
     if(wentBack){
       var y=trail[trail.length-1].y||0;
       var go=function(){window.scrollTo({top:y,behavior:'instant'})};
-      go();window.addEventListener('load',function(){setTimeout(go,0)});
+      go();window.addEventListener('load',function(){setTimeout(function(){if(!touched)go()},0)});
       return;
     }
     if(nav.type==='back_forward')return;
@@ -75,7 +77,7 @@
       try{history.replaceState(null,'',location.pathname+location.search)}catch(_){}
     }
     var top=function(){window.scrollTo({top:0,behavior:'instant'})};
-    top();window.addEventListener('load',function(){setTimeout(top,0)});
+    top();window.addEventListener('load',function(){setTimeout(function(){if(!touched)top()},0)});
   })();
 
   /* шапка */
@@ -129,7 +131,7 @@
       if(location.hash==='#resume'){
         var go=function(){window.scrollTo({top:ret.y,behavior:'instant'})};
         history.replaceState(null,'',location.pathname);
-        if(document.readyState==='complete')setTimeout(go,30);else window.addEventListener('load',function(){setTimeout(go,30)});
+        if(document.readyState==='complete')setTimeout(go,30);else window.addEventListener('load',function(){setTimeout(function(){if(!touched)go()},30)});
       }
       sset('pv-return',null);
     }
