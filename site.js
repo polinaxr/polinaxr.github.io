@@ -593,11 +593,16 @@
   })();
 })();
 
-/* видео-ответ (карточка наверху страницы ответа): открываем поверх страницы, как рилс в Instagram —
-   без кнопок браузера; нажать — пауза / дальше, держать палец — в 2 раза быстрее, полоска внизу — сколько осталось */
+/* видео-ответ (карточка наверху страницы ответа): открываем поверх страницы сразу ярким, без кнопок.
+   Нажать на видео — затемнение и кнопки, как в Chrome: «назад 10 с», пауза, «вперёд 10 с», внизу время и перемотка;
+   пока видео идёт, через 3 с кнопки прячутся сами. Держать палец — в 2 раза быстрее. */
 (function(){
   var X='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
-  var PLAY='<svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10.5-6.5a1 1 0 0 0 0-1.8L9.5 4.6A1 1 0 0 0 8 5.5z"/></svg>';
+  var PLAY='<svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10.5-6.5a1 1 0 0 0 0-1.8L9.5 4.6A1 1 0 0 0 8 5.5z"/></svg>';
+  var PAUSE='<svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4.5" width="4" height="15" rx="1.2"/><rect x="14" y="4.5" width="4" height="15" rx="1.2"/></svg>';
+  function ten(fwd){return '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+
+    (fwd?'<path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 3.5V8h-4.5"/>':'<path d="M4 12a8 8 0 1 0 2.34-5.66"/><path d="M4 3.5V8h4.5"/>')+
+    '<text x="12" y="15.4" text-anchor="middle" font-size="7.2" font-weight="700" fill="currentColor" stroke="none" font-family="Onest,Arial,sans-serif">10</text></svg>'}
   document.addEventListener('click',function(e){
     var a=e.target.closest&&e.target.closest('[data-reel]');
     if(!a||e.metaKey||e.ctrlKey||e.shiftKey)return;
@@ -605,60 +610,72 @@
     var m=document.createElement('div');m.className='reel-modal';
     m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('aria-label','Видео-ответ');
     m.innerHTML='<div class="reel-player"><video playsinline webkit-playsinline preload="auto" disablepictureinpicture></video>'+
-      '<div class="reel-icon" aria-hidden="true">'+PLAY+'</div><div class="reel-speed" aria-hidden="true">2×</div>'+
-      '<div class="reel-line" aria-hidden="true"><i></i></div>'+
+      '<div class="reel-line" aria-hidden="true"><i></i></div><div class="reel-speed" aria-hidden="true">2×</div>'+
+      '<div class="reel-ui"><div class="reel-btns">'+
+        '<button type="button" class="reel-btn reel-back" aria-label="Назад на 10 секунд">'+ten(0)+'</button>'+
+        '<button type="button" class="reel-btn reel-pp" aria-label="Пауза">'+PAUSE+'</button>'+
+        '<button type="button" class="reel-btn reel-fwd" aria-label="Вперёд на 10 секунд">'+ten(1)+'</button></div>'+
       '<div class="reel-ctrl"><div class="reel-time"><span>0:00</span><span>0:00</span></div>'+
-      '<div class="reel-track" role="slider" aria-label="Перемотка" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i><b></b></div></div></div>'+
+      '<div class="reel-track" role="slider" aria-label="Перемотка" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i><b></b></div></div></div></div>'+
       '<button type="button" class="reel-close" aria-label="Закрыть видео">'+X+'</button>';
-    var p=m.querySelector('.reel-player'),v=m.querySelector('video'),icon=m.querySelector('.reel-icon'),
-        speed=m.querySelector('.reel-speed'),line=m.querySelector('.reel-line i'),bar=m.querySelector('.reel-track'),fill=bar.querySelector('i'),knob=bar.querySelector('b'),
-        times=m.querySelectorAll('.reel-time span'),c=m.querySelector('.reel-close');
+    var p=m.querySelector('.reel-player'),v=m.querySelector('video'),speed=m.querySelector('.reel-speed'),
+        line=m.querySelector('.reel-line i'),pp=m.querySelector('.reel-pp'),bar=m.querySelector('.reel-track'),
+        fill=bar.querySelector('i'),knob=bar.querySelector('b'),times=m.querySelectorAll('.reel-time span'),c=m.querySelector('.reel-close');
     v.src=a.getAttribute('href');var img=a.querySelector('img');if(img)v.poster=img.src;
     document.body.appendChild(m);
     var root=document.documentElement,was=root.style.overflow;root.style.overflow='hidden';
-    function show(){icon.classList.toggle('show',v.paused);p.classList.toggle('paused',v.paused)}
-    v.addEventListener('play',show);v.addEventListener('pause',show);v.addEventListener('ended',show);
-    function go(){if(v.ended)v.currentTime=0;var pr=v.play();if(pr&&pr.catch)pr.catch(show)}
-    /* полоска: сколько прошло */
+    function go(){if(v.ended)v.currentTime=0;var pr=v.play();if(pr&&pr.catch)pr.catch(function(){showUI()})}
+    /* кнопки: показать / спрятать */
+    var hideT=null,dragging=false;
+    function showUI(){p.classList.add('ui');clearTimeout(hideT);if(!v.paused)hideT=setTimeout(hideUI,3000)}
+    function hideUI(){clearTimeout(hideT);if(v.paused||dragging)return;p.classList.remove('ui')}
+    function icon(){pp.innerHTML=v.paused?PLAY:PAUSE;pp.setAttribute('aria-label',v.paused?'Смотреть':'Пауза')}
+    v.addEventListener('pause',function(){icon();showUI()});
+    v.addEventListener('play',function(){icon();if(p.classList.contains('ui'))showUI()});
+    v.addEventListener('ended',function(){icon();showUI()});
+    /* время и полоски */
     function mmss(t,up){t=Math.max(0,(up?Math.ceil:Math.floor)(t||0));return Math.floor(t/60)+':'+('0'+t%60).slice(-2)}
     function draw(){var d=v.duration||0,f=d?v.currentTime/d*100:0;
       line.style.width=fill.style.width=f+'%';knob.style.left=f+'%';bar.setAttribute('aria-valuenow',Math.round(f));
       times[0].textContent=mmss(v.currentTime);times[1].textContent='−'+mmss(d-v.currentTime,1)}
     ['timeupdate','seeked','loadedmetadata','pause'].forEach(function(t){v.addEventListener(t,draw)});
     var raf;function tick(){draw();raf=requestAnimationFrame(tick)}tick();
-    /* нажать — пауза / дальше; держать — 2×.
-       Пауза — сразу в момент касания. Звук в телефоне (особенно в наушниках) отстаёт от картинки на доли секунды,
-       и при паузе этот кусок пропадает, поэтому после паузы видео продолжается на 0,35 с раньше — ни одно слово не теряется */
-    var timer=null,holding=false,down=false,wasPlaying=false,rewind=false,BACK=0.35;
-    function fast(on){holding=on;v.playbackRate=on?2:1;speed.classList.toggle('show',on)}
-    function resume(){if(rewind&&!v.ended)v.currentTime=Math.max(0,v.currentTime-BACK);rewind=false;go()}
+    /* кнопки «назад», пауза, «вперёд» */
+    function jump(s){if(!v.duration)return;v.currentTime=Math.max(0,Math.min(v.duration-0.05,v.currentTime+s));draw();showUI()}
+    m.querySelector('.reel-back').addEventListener('click',function(){jump(-10)});
+    m.querySelector('.reel-fwd').addEventListener('click',function(){jump(10)});
+    pp.addEventListener('click',function(){v.paused?go():v.pause();showUI()});
+    /* нажать на видео — кнопки появляются / прячутся; держать — 2× */
+    var timer=null,holding=false,down=false;
+    function fast(on){holding=on;v.playbackRate=on?2:1;speed.classList.toggle('show',on);if(on)hideUI()}
     p.addEventListener('pointerdown',function(ev){
-      if(ev.target.closest('.reel-ctrl'))return;
-      down=true;wasPlaying=!v.paused;p.classList.add('press');
-      if(wasPlaying){v.pause();rewind=true}
-      timer=setTimeout(function(){timer=null;if(down&&wasPlaying){fast(true);resume()}},500);
+      if(ev.target.closest('.reel-btn,.reel-ctrl'))return;
+      down=true;timer=setTimeout(function(){timer=null;if(down&&!v.paused)fast(true)},500);
     });
     function up(ev,cancel){
-      if(!down)return;down=false;p.classList.remove('press');
-      if(timer){clearTimeout(timer);timer=null;if(!wasPlaying||cancel)resume()}
+      if(!down)return;down=false;
+      if(timer){clearTimeout(timer);timer=null;if(!cancel){p.classList.contains('ui')&&!v.paused?hideUI():showUI()}}
       else if(holding)fast(false);
-      else if(!cancel&&v.paused)resume();
     }
     p.addEventListener('pointerup',function(ev){up(ev,false)});
     p.addEventListener('pointercancel',function(ev){up(ev,true)});
     p.addEventListener('pointerleave',function(ev){if(holding||timer)up(ev,true)});
     p.addEventListener('contextmenu',function(ev){ev.preventDefault()});
     /* перемотка по полоске */
-    function seek(ev){rewind=false;var r=bar.getBoundingClientRect();if(v.duration)v.currentTime=Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width))*v.duration}
-    bar.addEventListener('pointerdown',function(ev){ev.stopPropagation();ev.preventDefault();seek(ev);bar.classList.add('drag');bar.onpointermove=seek;try{bar.setPointerCapture(ev.pointerId)}catch(_){}});
-    function endSeek(){bar.onpointermove=null;bar.classList.remove('drag')}
+    function seek(ev){var r=bar.getBoundingClientRect();if(v.duration)v.currentTime=Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width))*v.duration;draw()}
+    bar.addEventListener('pointerdown',function(ev){ev.stopPropagation();ev.preventDefault();dragging=true;clearTimeout(hideT);seek(ev);bar.classList.add('drag');bar.onpointermove=seek;try{bar.setPointerCapture(ev.pointerId)}catch(_){}});
+    function endSeek(){bar.onpointermove=null;bar.classList.remove('drag');dragging=false;showUI()}
     bar.addEventListener('pointerup',endSeek);bar.addEventListener('pointercancel',endSeek);
-    function close(){cancelAnimationFrame(raf);v.pause();v.removeAttribute('src');v.load();m.remove();root.style.overflow=was;document.removeEventListener('keydown',key);a.focus()}
-    function key(ev){if(ev.key==='Escape')close();else if(ev.key===' '||ev.key==='k'){ev.preventDefault();if(v.paused)resume();else{v.pause();rewind=true}}}
+    function close(){cancelAnimationFrame(raf);clearTimeout(hideT);v.pause();v.removeAttribute('src');v.load();m.remove();root.style.overflow=was;document.removeEventListener('keydown',key);a.focus()}
+    function key(ev){
+      if(ev.key==='Escape')close();
+      else if(ev.key===' '||ev.key==='k'){ev.preventDefault();v.paused?go():v.pause()}
+      else if(ev.key==='ArrowLeft')jump(-10);else if(ev.key==='ArrowRight')jump(10);
+    }
     c.addEventListener('click',close);
     m.addEventListener('click',function(ev){if(ev.target===m)close()});
     document.addEventListener('keydown',key);
     c.focus();
-    go();
+    icon();go();
   });
 })();

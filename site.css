@@ -457,18 +457,20 @@ body::before{
 .reel-modal{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:56px 12px 16px;background:rgba(6,9,22,.94)}
 .reel-player{position:relative;width:min(100%,calc((100dvh - 72px) * 9 / 16));aspect-ratio:9/16;border-radius:16px;overflow:hidden;background:#000;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;cursor:pointer}
 .reel-player video{display:block;width:100%;height:100%;object-fit:cover;pointer-events:none}
-.reel-icon{position:absolute;inset:0;margin:auto;width:76px;height:76px;display:grid;place-items:center;border-radius:50%;background:rgba(0,0,0,.4);color:#fff;opacity:0;transition:opacity .2s ease;pointer-events:none}
-.reel-icon svg{margin-left:4px}
-.reel-icon.show{opacity:1}
-.reel-player.press .reel-icon,.reel-player.press .reel-ctrl{opacity:0;transition:none}
 .reel-speed{position:absolute;top:14px;left:50%;transform:translateX(-50%);padding:6px 14px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font-weight:700;font-size:15px;opacity:0;transition:opacity .15s ease;pointer-events:none}
 .reel-speed.show{opacity:1}
+/* пока видео идёт — тонкая полоска «сколько прошло» */
 .reel-line{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(31,37,64,.22);transition:opacity .2s ease}
 .reel-line i{position:absolute;left:0;top:0;bottom:0;width:0;background:#E1A637}
-.reel-player.paused .reel-line{opacity:0}
-/* на паузе — полоска со временем и перемоткой, как у Chrome */
-.reel-ctrl{position:absolute;left:0;right:0;bottom:0;padding:44px 16px 14px;background:linear-gradient(to top,rgba(0,0,0,.6),rgba(0,0,0,0));color:#fff;opacity:0;pointer-events:none;transition:opacity .2s ease}
-.reel-player.paused .reel-ctrl{opacity:1;pointer-events:auto}
+.reel-player.ui .reel-line{opacity:0}
+/* нажали на видео — затемнение и кнопки, как в Chrome */
+.reel-ui{position:absolute;inset:0;background:rgba(0,0,0,.38);opacity:0;pointer-events:none;transition:opacity .2s ease}
+.reel-player.ui .reel-ui{opacity:1;pointer-events:auto}
+.reel-btns{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;gap:clamp(28px,10vw,52px)}
+.reel-btn{display:grid;place-items:center;width:58px;height:58px;padding:0;border:0;border-radius:50%;background:transparent;color:#fff;cursor:pointer;-webkit-tap-highlight-color:transparent;filter:drop-shadow(0 1px 3px rgba(0,0,0,.35))}
+.reel-btn:active{background:rgba(255,255,255,.15)}
+.reel-pp{width:78px;height:78px;background:rgba(0,0,0,.25)}
+.reel-ctrl{position:absolute;left:0;right:0;bottom:0;padding:44px 16px 14px;background:linear-gradient(to top,rgba(0,0,0,.5),rgba(0,0,0,0));color:#fff}
 .reel-time{display:flex;justify-content:space-between;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;margin-bottom:8px;text-shadow:0 1px 2px rgba(0,0,0,.4)}
 .reel-track{position:relative;height:24px;touch-action:none;cursor:pointer}
 .reel-track::before{content:"";position:absolute;left:0;right:0;top:50%;height:5px;margin-top:-2.5px;border-radius:3px;background:rgba(255,255,255,.4)}
