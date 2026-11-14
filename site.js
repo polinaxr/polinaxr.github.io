@@ -470,6 +470,7 @@
     /* не мешаем, если открыт поиск или под пальцами то, что само листается вбок */
     function blocked(el){
       var s=document.getElementById('search');if(s&&!s.hidden)return true;
+      if(document.querySelector('.reel-modal'))return true;
       for(;el&&el.nodeType===1&&el!==document.body;el=el.parentElement){
         if(/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))return true;
         if(el.scrollWidth>el.clientWidth+1){var o=getComputedStyle(el).overflowX;if(o==='auto'||o==='scroll')return true}
@@ -590,4 +591,29 @@
     /* вернулись на эту страницу кнопкой «назад» браузера — страница должна стоять на месте, без следов прошлого смахивания */
     window.addEventListener('pageshow',function(e){if(e.persisted)reset()});
   })();
+})();
+
+/* видео-ответ (карточка наверху страницы ответа): открываем поверх страницы, как рилс */
+(function(){
+  var X='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  document.addEventListener('click',function(e){
+    var a=e.target.closest&&e.target.closest('[data-reel]');
+    if(!a||e.metaKey||e.ctrlKey||e.shiftKey)return;
+    e.preventDefault();
+    var m=document.createElement('div');m.className='reel-modal';
+    m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('aria-label','Видео-ответ');
+    var v=document.createElement('video');
+    v.src=a.getAttribute('href');var img=a.querySelector('img');if(img)v.poster=img.src;
+    v.controls=true;v.playsInline=true;v.setAttribute('playsinline','');v.preload='auto';
+    var c=document.createElement('button');c.type='button';c.className='reel-close';c.setAttribute('aria-label','Закрыть видео');c.innerHTML=X;
+    m.appendChild(v);m.appendChild(c);document.body.appendChild(m);
+    var root=document.documentElement,was=root.style.overflow;root.style.overflow='hidden';
+    function close(){v.pause();v.removeAttribute('src');v.load();m.remove();root.style.overflow=was;document.removeEventListener('keydown',key);a.focus()}
+    function key(ev){if(ev.key==='Escape')close()}
+    c.addEventListener('click',close);
+    m.addEventListener('click',function(ev){if(ev.target===m)close()});
+    document.addEventListener('keydown',key);
+    c.focus();
+    var p=v.play();if(p&&p.catch)p.catch(function(){});
+  });
 })();
