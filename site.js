@@ -187,6 +187,12 @@
     var share=document.createElement('div');share.className='share';
     share.innerHTML='<p>Знаете, кому это может помочь?</p><button type="button" class="btn share-btn" aria-haspopup="true" aria-expanded="false"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M7.5 7.5L12 3l4.5 4.5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Поделиться</button>';
     art.appendChild(share);
+    /* «Есть вопрос? Напишите нам» — живой человек ответит (Telegram). На странице молитвы — свой текст */
+    var TG='https://t.me/Polinwqk',isOtklik=/\/otklik(\.html)?$/.test(sUrl);
+    var ask=document.createElement('div');ask.className='share ask';
+    ask.innerHTML='<p>'+(isOtklik?'Вы помолились? Напишите нам — порадуемся вместе с вами и поможем с первыми шагами и с поиском церкви рядом.':'Есть вопрос? Напишите нам — ответим лично, без осуждения.')+'</p>'+
+      '<a class="btn" href="'+TG+'" target="_blank" rel="noopener"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 4L3 11l6 2.5M21 4l-4 16-8-6.5M21 4L9 13.5V19l3-3"/></svg>Написать</a>';
+    art.appendChild(ask);
     var sBtn=share.querySelector('button'),menu=null;
     function closeMenu(){if(menu){menu.remove();menu=null;sBtn.setAttribute('aria-expanded','false')}}
     function copyLink(done){

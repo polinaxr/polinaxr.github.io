@@ -18,6 +18,7 @@
   --shadow:0 1px 2px rgba(27,34,56,.05),0 10px 26px rgba(27,34,56,.06);
   --f-display:"Manrope",system-ui,sans-serif;
   --f-body:"Onest",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-head:"Playfair Display",Georgia,"Times New Roman",serif;
 }
 /* по умолчанию тёмная тема; светлая — только если человек выбрал её внизу страницы */
 :root:not([data-theme="light"]){
@@ -486,3 +487,10 @@ body::before{
 .reel-tile{display:block;position:relative;text-decoration:none}
 .reel-tile img{display:block;width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;border-radius:12px;transition:transform .2s ease}
 .reel-tile:hover img{transform:translateY(-2px)}
+
+/* заголовки — тем же шрифтом, что в видео (Playfair Display); её «да» 14.11 на пример без подчёркиваний */
+h1,h2,h3{font-family:var(--f-head);letter-spacing:-.01em}
+.ask{border-color:var(--line);background:var(--surface)}
+.ask .btn svg{flex:none}
+.prose .ask .btn{color:var(--on-solid);text-decoration:none}
+@media (max-width:480px){.ask .btn{width:100%;justify-content:center}}
