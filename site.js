@@ -629,14 +629,16 @@
     /* нажать — пауза / дальше; держать — 2× */
     var timer=null,holding=false,down=false;
     function fast(on){holding=on;v.playbackRate=on?2:1;speed.classList.toggle('show',on)}
+    /* 2× — только если палец держат дольше полсекунды и видео идёт: обычное нажатие всегда просто пауза */
     p.addEventListener('pointerdown',function(ev){
       if(ev.target.closest('.reel-ctrl'))return;
-      down=true;timer=setTimeout(function(){timer=null;if(down){if(v.paused)go();fast(true)}},280);
+      down=true;timer=setTimeout(function(){timer=null;if(down&&!v.paused)fast(true)},500);
     });
     function up(ev,cancel){
       if(!down)return;down=false;
       if(timer){clearTimeout(timer);timer=null;if(!cancel){v.paused?go():v.pause()}}
       else if(holding)fast(false);
+      else if(!cancel&&v.paused)go();
     }
     p.addEventListener('pointerup',function(ev){up(ev,false)});
     p.addEventListener('pointercancel',function(ev){up(ev,true)});
