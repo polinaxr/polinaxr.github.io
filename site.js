@@ -593,27 +593,57 @@
   })();
 })();
 
-/* видео-ответ (карточка наверху страницы ответа): открываем поверх страницы, как рилс */
+/* видео-ответ (карточка наверху страницы ответа): открываем поверх страницы, как рилс в Instagram —
+   без кнопок браузера; нажать — пауза / дальше, держать палец — в 2 раза быстрее, полоска внизу — сколько осталось */
 (function(){
   var X='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  var PLAY='<svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10.5-6.5a1 1 0 0 0 0-1.8L9.5 4.6A1 1 0 0 0 8 5.5z"/></svg>';
   document.addEventListener('click',function(e){
     var a=e.target.closest&&e.target.closest('[data-reel]');
     if(!a||e.metaKey||e.ctrlKey||e.shiftKey)return;
     e.preventDefault();
     var m=document.createElement('div');m.className='reel-modal';
     m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('aria-label','Видео-ответ');
-    var v=document.createElement('video');
+    m.innerHTML='<div class="reel-player"><video playsinline webkit-playsinline preload="auto" disablepictureinpicture></video>'+
+      '<div class="reel-icon" aria-hidden="true">'+PLAY+'</div><div class="reel-speed" aria-hidden="true">2×</div>'+
+      '<div class="reel-bar" role="slider" aria-label="Перемотка" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div></div>'+
+      '<button type="button" class="reel-close" aria-label="Закрыть видео">'+X+'</button>';
+    var p=m.querySelector('.reel-player'),v=m.querySelector('video'),icon=m.querySelector('.reel-icon'),
+        speed=m.querySelector('.reel-speed'),bar=m.querySelector('.reel-bar'),fill=bar.querySelector('i'),c=m.querySelector('.reel-close');
     v.src=a.getAttribute('href');var img=a.querySelector('img');if(img)v.poster=img.src;
-    v.controls=true;v.playsInline=true;v.setAttribute('playsinline','');v.preload='auto';
-    var c=document.createElement('button');c.type='button';c.className='reel-close';c.setAttribute('aria-label','Закрыть видео');c.innerHTML=X;
-    m.appendChild(v);m.appendChild(c);document.body.appendChild(m);
+    document.body.appendChild(m);
     var root=document.documentElement,was=root.style.overflow;root.style.overflow='hidden';
-    function close(){v.pause();v.removeAttribute('src');v.load();m.remove();root.style.overflow=was;document.removeEventListener('keydown',key);a.focus()}
-    function key(ev){if(ev.key==='Escape')close()}
+    function show(){icon.classList.toggle('show',v.paused)}
+    v.addEventListener('play',show);v.addEventListener('pause',show);v.addEventListener('ended',show);
+    function go(){if(v.ended)v.currentTime=0;var pr=v.play();if(pr&&pr.catch)pr.catch(show)}
+    /* полоска: сколько прошло */
+    var raf;function tick(){if(v.duration)fill.style.width=(v.currentTime/v.duration*100)+'%';bar.setAttribute('aria-valuenow',Math.round(v.duration?v.currentTime/v.duration*100:0));raf=requestAnimationFrame(tick)}tick();
+    /* нажать — пауза / дальше; держать — 2× */
+    var timer=null,holding=false,down=false;
+    function fast(on){holding=on;v.playbackRate=on?2:1;speed.classList.toggle('show',on)}
+    p.addEventListener('pointerdown',function(ev){
+      if(ev.target.closest('.reel-bar'))return;
+      down=true;timer=setTimeout(function(){timer=null;if(down){if(v.paused)go();fast(true)}},280);
+    });
+    function up(ev,cancel){
+      if(!down)return;down=false;
+      if(timer){clearTimeout(timer);timer=null;if(!cancel){v.paused?go():v.pause()}}
+      else if(holding)fast(false);
+    }
+    p.addEventListener('pointerup',function(ev){up(ev,false)});
+    p.addEventListener('pointercancel',function(ev){up(ev,true)});
+    p.addEventListener('pointerleave',function(ev){if(holding||timer)up(ev,true)});
+    p.addEventListener('contextmenu',function(ev){ev.preventDefault()});
+    /* перемотка по полоске */
+    function seek(ev){var r=bar.getBoundingClientRect();if(v.duration)v.currentTime=Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width))*v.duration}
+    bar.addEventListener('pointerdown',function(ev){ev.stopPropagation();seek(ev);bar.setPointerCapture&&bar.setPointerCapture(ev.pointerId);bar.onpointermove=seek});
+    bar.addEventListener('pointerup',function(){bar.onpointermove=null});
+    function close(){cancelAnimationFrame(raf);v.pause();v.removeAttribute('src');v.load();m.remove();root.style.overflow=was;document.removeEventListener('keydown',key);a.focus()}
+    function key(ev){if(ev.key==='Escape')close();else if(ev.key===' '||ev.key==='k'){ev.preventDefault();v.paused?go():v.pause()}}
     c.addEventListener('click',close);
     m.addEventListener('click',function(ev){if(ev.target===m)close()});
     document.addEventListener('keydown',key);
     c.focus();
-    var p=v.play();if(p&&p.catch)p.catch(function(){});
+    go();
   });
 })();
