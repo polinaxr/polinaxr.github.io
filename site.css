@@ -460,6 +460,7 @@ body::before{
 .reel-icon{position:absolute;inset:0;margin:auto;width:76px;height:76px;display:grid;place-items:center;border-radius:50%;background:rgba(0,0,0,.4);color:#fff;opacity:0;transition:opacity .2s ease;pointer-events:none}
 .reel-icon svg{margin-left:4px}
 .reel-icon.show{opacity:1}
+.reel-player.press .reel-icon,.reel-player.press .reel-ctrl{opacity:0;transition:none}
 .reel-speed{position:absolute;top:14px;left:50%;transform:translateX(-50%);padding:6px 14px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font-weight:700;font-size:15px;opacity:0;transition:opacity .15s ease;pointer-events:none}
 .reel-speed.show{opacity:1}
 .reel-line{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(31,37,64,.22);transition:opacity .2s ease}

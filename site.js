@@ -626,31 +626,35 @@
       times[0].textContent=mmss(v.currentTime);times[1].textContent='−'+mmss(d-v.currentTime,1)}
     ['timeupdate','seeked','loadedmetadata','pause'].forEach(function(t){v.addEventListener(t,draw)});
     var raf;function tick(){draw();raf=requestAnimationFrame(tick)}tick();
-    /* нажать — пауза / дальше; держать — 2× */
-    var timer=null,holding=false,down=false;
+    /* нажать — пауза / дальше; держать — 2×.
+       Пауза — сразу в момент касания. Звук в телефоне (особенно в наушниках) отстаёт от картинки на доли секунды,
+       и при паузе этот кусок пропадает, поэтому после паузы видео продолжается на 0,35 с раньше — ни одно слово не теряется */
+    var timer=null,holding=false,down=false,wasPlaying=false,rewind=false,BACK=0.35;
     function fast(on){holding=on;v.playbackRate=on?2:1;speed.classList.toggle('show',on)}
-    /* 2× — только если палец держат дольше полсекунды и видео идёт: обычное нажатие всегда просто пауза */
+    function resume(){if(rewind&&!v.ended)v.currentTime=Math.max(0,v.currentTime-BACK);rewind=false;go()}
     p.addEventListener('pointerdown',function(ev){
       if(ev.target.closest('.reel-ctrl'))return;
-      down=true;timer=setTimeout(function(){timer=null;if(down&&!v.paused)fast(true)},500);
+      down=true;wasPlaying=!v.paused;p.classList.add('press');
+      if(wasPlaying){v.pause();rewind=true}
+      timer=setTimeout(function(){timer=null;if(down&&wasPlaying){fast(true);resume()}},500);
     });
     function up(ev,cancel){
-      if(!down)return;down=false;
-      if(timer){clearTimeout(timer);timer=null;if(!cancel){v.paused?go():v.pause()}}
+      if(!down)return;down=false;p.classList.remove('press');
+      if(timer){clearTimeout(timer);timer=null;if(!wasPlaying||cancel)resume()}
       else if(holding)fast(false);
-      else if(!cancel&&v.paused)go();
+      else if(!cancel&&v.paused)resume();
     }
     p.addEventListener('pointerup',function(ev){up(ev,false)});
     p.addEventListener('pointercancel',function(ev){up(ev,true)});
     p.addEventListener('pointerleave',function(ev){if(holding||timer)up(ev,true)});
     p.addEventListener('contextmenu',function(ev){ev.preventDefault()});
     /* перемотка по полоске */
-    function seek(ev){var r=bar.getBoundingClientRect();if(v.duration)v.currentTime=Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width))*v.duration}
+    function seek(ev){rewind=false;var r=bar.getBoundingClientRect();if(v.duration)v.currentTime=Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width))*v.duration}
     bar.addEventListener('pointerdown',function(ev){ev.stopPropagation();ev.preventDefault();seek(ev);bar.classList.add('drag');bar.onpointermove=seek;try{bar.setPointerCapture(ev.pointerId)}catch(_){}});
     function endSeek(){bar.onpointermove=null;bar.classList.remove('drag')}
     bar.addEventListener('pointerup',endSeek);bar.addEventListener('pointercancel',endSeek);
     function close(){cancelAnimationFrame(raf);v.pause();v.removeAttribute('src');v.load();m.remove();root.style.overflow=was;document.removeEventListener('keydown',key);a.focus()}
-    function key(ev){if(ev.key==='Escape')close();else if(ev.key===' '||ev.key==='k'){ev.preventDefault();v.paused?go():v.pause()}}
+    function key(ev){if(ev.key==='Escape')close();else if(ev.key===' '||ev.key==='k'){ev.preventDefault();if(v.paused)resume();else{v.pause();rewind=true}}}
     c.addEventListener('click',close);
     m.addEventListener('click',function(ev){if(ev.target===m)close()});
     document.addEventListener('keydown',key);
