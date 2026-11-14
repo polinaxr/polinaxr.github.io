@@ -462,9 +462,18 @@ body::before{
 .reel-icon.show{opacity:1}
 .reel-speed{position:absolute;top:14px;left:50%;transform:translateX(-50%);padding:6px 14px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font-weight:700;font-size:15px;opacity:0;transition:opacity .15s ease;pointer-events:none}
 .reel-speed.show{opacity:1}
-.reel-bar{position:absolute;left:0;right:0;bottom:0;height:26px;touch-action:none}
-.reel-bar::before{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(31,37,64,.16)}
-.reel-bar i{position:absolute;left:0;bottom:0;height:4px;width:0;background:#F0B54A}
+.reel-line{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(31,37,64,.22);transition:opacity .2s ease}
+.reel-line i{position:absolute;left:0;top:0;bottom:0;width:0;background:#E1A637}
+.reel-player.paused .reel-line{opacity:0}
+/* на паузе — полоска со временем и перемоткой, как у Chrome */
+.reel-ctrl{position:absolute;left:0;right:0;bottom:0;padding:44px 16px 14px;background:linear-gradient(to top,rgba(0,0,0,.6),rgba(0,0,0,0));color:#fff;opacity:0;pointer-events:none;transition:opacity .2s ease}
+.reel-player.paused .reel-ctrl{opacity:1;pointer-events:auto}
+.reel-time{display:flex;justify-content:space-between;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;margin-bottom:8px;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.reel-track{position:relative;height:24px;touch-action:none;cursor:pointer}
+.reel-track::before{content:"";position:absolute;left:0;right:0;top:50%;height:5px;margin-top:-2.5px;border-radius:3px;background:rgba(255,255,255,.4)}
+.reel-track i{position:absolute;left:0;top:50%;height:5px;margin-top:-2.5px;width:0;border-radius:3px;background:#F0B54A}
+.reel-track b{position:absolute;top:50%;left:0;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.reel-track.drag b{transform:scale(1.25)}
 .reel-close{position:absolute;top:10px;right:10px;display:grid;place-items:center;width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;cursor:pointer}
 /* страница /insta: кнопки и сетка обложек, как в профиле */
 .insta-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}

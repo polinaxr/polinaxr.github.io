@@ -606,23 +606,31 @@
     m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('aria-label','Видео-ответ');
     m.innerHTML='<div class="reel-player"><video playsinline webkit-playsinline preload="auto" disablepictureinpicture></video>'+
       '<div class="reel-icon" aria-hidden="true">'+PLAY+'</div><div class="reel-speed" aria-hidden="true">2×</div>'+
-      '<div class="reel-bar" role="slider" aria-label="Перемотка" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div></div>'+
+      '<div class="reel-line" aria-hidden="true"><i></i></div>'+
+      '<div class="reel-ctrl"><div class="reel-time"><span>0:00</span><span>0:00</span></div>'+
+      '<div class="reel-track" role="slider" aria-label="Перемотка" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i><b></b></div></div></div>'+
       '<button type="button" class="reel-close" aria-label="Закрыть видео">'+X+'</button>';
     var p=m.querySelector('.reel-player'),v=m.querySelector('video'),icon=m.querySelector('.reel-icon'),
-        speed=m.querySelector('.reel-speed'),bar=m.querySelector('.reel-bar'),fill=bar.querySelector('i'),c=m.querySelector('.reel-close');
+        speed=m.querySelector('.reel-speed'),line=m.querySelector('.reel-line i'),bar=m.querySelector('.reel-track'),fill=bar.querySelector('i'),knob=bar.querySelector('b'),
+        times=m.querySelectorAll('.reel-time span'),c=m.querySelector('.reel-close');
     v.src=a.getAttribute('href');var img=a.querySelector('img');if(img)v.poster=img.src;
     document.body.appendChild(m);
     var root=document.documentElement,was=root.style.overflow;root.style.overflow='hidden';
-    function show(){icon.classList.toggle('show',v.paused)}
+    function show(){icon.classList.toggle('show',v.paused);p.classList.toggle('paused',v.paused)}
     v.addEventListener('play',show);v.addEventListener('pause',show);v.addEventListener('ended',show);
     function go(){if(v.ended)v.currentTime=0;var pr=v.play();if(pr&&pr.catch)pr.catch(show)}
     /* полоска: сколько прошло */
-    var raf;function tick(){if(v.duration)fill.style.width=(v.currentTime/v.duration*100)+'%';bar.setAttribute('aria-valuenow',Math.round(v.duration?v.currentTime/v.duration*100:0));raf=requestAnimationFrame(tick)}tick();
+    function mmss(t,up){t=Math.max(0,(up?Math.ceil:Math.floor)(t||0));return Math.floor(t/60)+':'+('0'+t%60).slice(-2)}
+    function draw(){var d=v.duration||0,f=d?v.currentTime/d*100:0;
+      line.style.width=fill.style.width=f+'%';knob.style.left=f+'%';bar.setAttribute('aria-valuenow',Math.round(f));
+      times[0].textContent=mmss(v.currentTime);times[1].textContent='−'+mmss(d-v.currentTime,1)}
+    ['timeupdate','seeked','loadedmetadata','pause'].forEach(function(t){v.addEventListener(t,draw)});
+    var raf;function tick(){draw();raf=requestAnimationFrame(tick)}tick();
     /* нажать — пауза / дальше; держать — 2× */
     var timer=null,holding=false,down=false;
     function fast(on){holding=on;v.playbackRate=on?2:1;speed.classList.toggle('show',on)}
     p.addEventListener('pointerdown',function(ev){
-      if(ev.target.closest('.reel-bar'))return;
+      if(ev.target.closest('.reel-ctrl'))return;
       down=true;timer=setTimeout(function(){timer=null;if(down){if(v.paused)go();fast(true)}},280);
     });
     function up(ev,cancel){
@@ -636,8 +644,9 @@
     p.addEventListener('contextmenu',function(ev){ev.preventDefault()});
     /* перемотка по полоске */
     function seek(ev){var r=bar.getBoundingClientRect();if(v.duration)v.currentTime=Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width))*v.duration}
-    bar.addEventListener('pointerdown',function(ev){ev.stopPropagation();seek(ev);bar.setPointerCapture&&bar.setPointerCapture(ev.pointerId);bar.onpointermove=seek});
-    bar.addEventListener('pointerup',function(){bar.onpointermove=null});
+    bar.addEventListener('pointerdown',function(ev){ev.stopPropagation();ev.preventDefault();seek(ev);bar.classList.add('drag');bar.onpointermove=seek;try{bar.setPointerCapture(ev.pointerId)}catch(_){}});
+    function endSeek(){bar.onpointermove=null;bar.classList.remove('drag')}
+    bar.addEventListener('pointerup',endSeek);bar.addEventListener('pointercancel',endSeek);
     function close(){cancelAnimationFrame(raf);v.pause();v.removeAttribute('src');v.load();m.remove();root.style.overflow=was;document.removeEventListener('keydown',key);a.focus()}
     function key(ev){if(ev.key==='Escape')close();else if(ev.key===' '||ev.key==='k'){ev.preventDefault();v.paused?go():v.pause()}}
     c.addEventListener('click',close);
