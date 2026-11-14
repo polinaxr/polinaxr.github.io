@@ -603,10 +603,20 @@
   function ten(fwd){return '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+
     (fwd?'<path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 3.5V8h-4.5"/>':'<path d="M4 12a8 8 0 1 0 2.34-5.66"/><path d="M4 3.5V8h4.5"/>')+
     '<text x="12" y="15.4" text-anchor="middle" font-size="7.2" font-weight="700" fill="currentColor" stroke="none" font-family="Onest,Arial,sans-serif">10</text></svg>'}
+  /* Звук в телефоне отстаёт от картинки (в динамике чуть-чуть, в беспроводных наушниках до 0,3 с).
+     При паузе этот хвост звука не доигрывает, поэтому точка паузы ставится туда, где звук реально слышали:
+     после «Смотреть» ничего не пропадает и ничего не повторяется. */
+  var LAG=0.2;
+  function measureLag(){
+    try{var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;var ctx=new AC();
+      var done=function(){var l=(ctx.outputLatency||0)+(ctx.baseLatency||0);if(l>0)LAG=Math.max(0.1,Math.min(0.35,l+0.06));try{ctx.close()}catch(_){}};
+      if(ctx.resume)ctx.resume().then(function(){setTimeout(done,150)},done);else done();
+    }catch(_){}
+  }
   document.addEventListener('click',function(e){
     var a=e.target.closest&&e.target.closest('[data-reel]');
     if(!a||e.metaKey||e.ctrlKey||e.shiftKey)return;
-    e.preventDefault();
+    e.preventDefault();measureLag();
     var m=document.createElement('div');m.className='reel-modal';
     m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('aria-label','Видео-ответ');
     m.innerHTML='<div class="reel-player"><video playsinline webkit-playsinline preload="auto" disablepictureinpicture></video>'+
@@ -644,7 +654,8 @@
     function jump(s){if(!v.duration)return;v.currentTime=Math.max(0,Math.min(v.duration-0.05,v.currentTime+s));draw();showUI()}
     m.querySelector('.reel-back').addEventListener('click',function(){jump(-10)});
     m.querySelector('.reel-fwd').addEventListener('click',function(){jump(10)});
-    pp.addEventListener('click',function(){v.paused?go():v.pause();showUI()});
+    function stop(){if(v.paused)return;v.pause();if(!v.ended)v.currentTime=Math.max(0,v.currentTime-LAG);draw()}
+    pp.addEventListener('click',function(){v.paused?go():stop();showUI()});
     /* нажать на видео — кнопки появляются / прячутся; держать — 2× */
     var timer=null,holding=false,down=false;
     function fast(on){holding=on;v.playbackRate=on?2:1;speed.classList.toggle('show',on);if(on)hideUI()}
@@ -669,7 +680,7 @@
     function close(){cancelAnimationFrame(raf);clearTimeout(hideT);v.pause();v.removeAttribute('src');v.load();m.remove();root.style.overflow=was;document.removeEventListener('keydown',key);a.focus()}
     function key(ev){
       if(ev.key==='Escape')close();
-      else if(ev.key===' '||ev.key==='k'){ev.preventDefault();v.paused?go():v.pause()}
+      else if(ev.key===' '||ev.key==='k'){ev.preventDefault();v.paused?go():stop()}
       else if(ev.key==='ArrowLeft')jump(-10);else if(ev.key==='ArrowRight')jump(10);
     }
     c.addEventListener('click',close);
