@@ -484,14 +484,6 @@ body::before{
 .reel-track b{position:absolute;top:50%;left:0;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .reel-track.drag b{transform:scale(1.25)}
 .reel-close{position:absolute;top:10px;right:10px;display:grid;place-items:center;width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;cursor:pointer}
-/* страница /insta: кнопки и сетка обложек, как в профиле */
-.insta-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
-.reel-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:44px}
-@media (min-width:640px){.reel-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (min-width:960px){.reel-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
-.reel-tile{display:block;position:relative;text-decoration:none}
-.reel-tile img{display:block;width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;border-radius:12px;transition:transform .2s ease}
-.reel-tile:hover img{transform:translateY(-2px)}
 
 /* заголовки — тем же шрифтом, что в видео (Playfair Display); её «да» 14.11 на пример без подчёркиваний */
 h1,h2,h3{font-family:var(--f-head);letter-spacing:-.01em}
