@@ -491,6 +491,3 @@ body::before{
 /* заголовки — тем же шрифтом, что в видео (Playfair Display); её «да» 14.11 на пример без подчёркиваний */
 h1,h2,h3{font-family:var(--f-head);letter-spacing:-.01em}
 .ask{border-color:var(--line);background:var(--surface)}
-.ask .btn svg{flex:none}
-.prose .ask .btn{color:var(--on-solid);text-decoration:none}
-@media (max-width:480px){.ask .btn{width:100%;justify-content:center}}
