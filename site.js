@@ -237,7 +237,11 @@
   function stem(w){var b=w.replace(/(ами|ями|ого|его|ому|ему|ыми|ими|ах|ях|ов|ев|ей|ой|ий|ый|ая|яя|ое|ее|ые|ие|ам|ям|ом|ем|ую|юю|ют|ут|ет|ит|ть|ся|сь|[аеиоуыэюяйь])$/,'');return b.length>=3?b:w}
   function words(s){return ' '+norm(s).replace(/[^a-zа-я0-9]+/g,' ')}
   /* у длинного слова сравниваем начало без двух последних букв: «выглядит» найдёт «выглядел», «христианином» — «христиане» */
-  function terms(q){return norm(q).replace(/[^a-zа-я0-9]+/g,' ').trim().split(' ').filter(function(w){return w.length>1&&!STOP[w]}).map(function(w){w=stem(w);return w.length>=7?w.slice(0,Math.max(5,w.length-2)):w})}
+  function raw(q){return norm(q).replace(/[^a-zа-я0-9]+/g,' ').trim().split(' ').filter(function(w){return w.length>1&&!STOP[w]})}
+  function terms(q){return raw(q).map(function(w){w=stem(w);return w.length>=7?w.slice(0,Math.max(5,w.length-2)):w})}
+  /* у «измениться», «покаяться» основа «измени-», «покая-» шире слова: она находит и «изменили», «покаяние».
+     Точнее — «изменит-», «покаят-»: где совпало и оно, тот ответ выше («измениться» → «Люди не меняются?», а не «Не изменили ли Библию?») */
+  function strict(q){return raw(q).map(function(w){var b=stem(w);return b.length>=7&&/ться$/.test(w)?b.slice(0,-1):''})}
   /* редкое слово важнее частого: «динозавры» говорит о вопросе больше, чем «Библия» */
   var DF={};
   function prep(it){if(!it._w){it._w=[words(it.title),words(it.keys||''),words(it.text||'')];it._t=terms(it.title)}}
@@ -262,12 +266,13 @@
       }
       return {items:found,good:found.length>0};
     }
-    var wt=ws.map(function(w){return weight(' '+w)}),all=wt.reduce(function(a,b){return a+b},0);
+    var wt=ws.map(function(w){return weight(' '+w)}),all=wt.reduce(function(a,b){return a+b},0),sw=strict(q);
     var res=D.search.map(function(it){
       prep(it);
-      var tl=it._w[0],ks=it._w[1],hay=it._w[2],s=0,hit=0,inTitle=0;
+      var tl=it._w[0],ks=it._w[1],hay=it._w[2],s=0,hit=0,inTitle=0,n=0;
       /* слово ищем с начала слова: «ад» не должен находиться внутри «страдания» */
-      ws.forEach(function(w,i){w=' '+w;var k=wt[i];if(tl.indexOf(w)>-1){s+=3*k;hit+=k;inTitle++}else if(ks.indexOf(w)>-1){s+=2*k;hit+=k}else if(hay.indexOf(w)>-1){s+=.6*k;hit+=.5*k}});
+      ws.forEach(function(w,i){w=' '+w;var k=wt[i];if(tl.indexOf(w)>-1){s+=3*k;hit+=k;inTitle++}else if(ks.indexOf(w)>-1){s+=2*k;hit+=k}else if(hay.indexOf(w)>-1){s+=.6*k;hit+=.5*k}
+        if(sw[i]&&(tl.indexOf(' '+sw[i])>-1||ks.indexOf(' '+sw[i])>-1)){s+=1.5*k;n+=ks.split(' '+sw[i]).length-1}});
       if(nq.length>3&&tl.indexOf(' '+nq)>-1)s+=10;
       /* вопрос из нескольких слов целиком совпал с готовой фразой в ключах: «не могу себя простить» */
       else if(nq.indexOf(' ')>-1&&(ks+' ').indexOf(' '+nq+' ')>-1)s+=6;
@@ -276,8 +281,9 @@
       if(it.kind==='Вопрос')s+=.3;
       /* выше тот, у кого совпало больше слов вопроса, а не одно частое слово */
       var c=hit/all;
-      return {it:it,s:s*(.4+c),c:c};
-    }).filter(function(x){return x.s>.3}).sort(function(a,b){return b.s-a.s});
+      return {it:it,s:s*(.4+c),c:c,n:n};
+    /* при равных очках выше тот, у кого точное «изменит-» чаще в ключах: про это и вопрос */
+    }).filter(function(x){return x.s>.3}).sort(function(a,b){return b.s-a.s||b.n-a.n});
     /* «хорошо нашлось», если у лучшего результата совпала хотя бы половина значимых слов в заголовке или ключевых словах */
     var best=res[0],good=!!best&&(best.c>=.6||ws.length===1&&best.c>=.5);
     /* если ответ нашёлся, слабые совпадения не показываем, чтобы не мешали */
