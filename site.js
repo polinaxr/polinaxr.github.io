@@ -281,7 +281,11 @@
     /* «хорошо нашлось», если у лучшего результата совпала хотя бы половина значимых слов в заголовке или ключевых словах */
     var best=res[0],good=!!best&&(best.c>=.6||ws.length===1&&best.c>=.5);
     /* если ответ нашёлся, слабые совпадения не показываем, чтобы не мешали */
-    if(good)res=res.filter(function(x){return x.s>=best.s*.4});
+    /* словарь — короткое определение. Если первым нашёлся он, статьи на это же слово не прячем: порог считаем от лучшей статьи
+       («Троица» → словарь и «Как Бог может быть один…») */
+    var top=best;
+    if(good&&best.it.kind==='Словарь'){var art=res.filter(function(x){return x.it.kind!=='Словарь'})[0];if(art&&art.c>=.6)top=art}
+    if(good)res=res.filter(function(x){return x.s>=top.s*.4});
     /* если ответа нет, предлагаем только то, что совпало хотя бы наполовину */
     else res=res.filter(function(x){return x.c>=.5});
     return {items:res.map(function(x){return x.it}),good:good};
